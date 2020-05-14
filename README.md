@@ -2,7 +2,7 @@
 
 iOS demo, request iOS13
 
-```oc
+```objectivec
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
