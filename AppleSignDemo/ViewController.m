@@ -26,8 +26,10 @@
 }
 
 - (void)signAction:(id)sender {
+    NSString *timestamp = @((NSInteger)NSDate.date.timeIntervalSince1970).stringValue;
     ASAuthorizationAppleIDProvider *provider = [[ASAuthorizationAppleIDProvider alloc] init];
     ASAuthorizationAppleIDRequest *request = [provider createRequest];
+    request.state = timestamp;
     request.requestedScopes = @[ASAuthorizationScopeEmail, ASAuthorizationScopeFullName];
     ASAuthorizationController *controller = [[ASAuthorizationController alloc] initWithAuthorizationRequests:@[request]];
     controller.delegate = self;
@@ -41,15 +43,19 @@
     id <ASAuthorizationCredential> credential = authorization.credential;
     if ([credential isKindOfClass:ASAuthorizationAppleIDCredential.class]) {
         ASAuthorizationAppleIDCredential *appleIDCredential = credential;
-        NSString *user = appleIDCredential.user;
+        NSString *user = appleIDCredential.user;  // An opaque user ID associated with the AppleID used for the sign in
         NSPersonNameComponents *fullName = appleIDCredential.fullName;
         NSString *email = appleIDCredential.email;
-        NSString *token = [appleIDCredential.identityToken base64EncodedStringWithOptions:0];
+        NSString *code = [[NSString alloc] initWithData:appleIDCredential.authorizationCode encoding:NSUTF8StringEncoding];  // one-time valid token
+        NSString *state = appleIDCredential.state;
+        NSString *token = [[NSString alloc] initWithData:appleIDCredential.identityToken encoding:NSUTF8StringEncoding];  // A JSON Web Token
         
         NSLog(@"user: %@\n"
               @"fullName: %@ %@\n"
               @"email: %@\n"
-              @"token: %@", user, fullName.givenName, fullName.familyName, email, token);
+              @"state: %@\n"
+              @"code: %@\n"
+              @"token: %@", user, fullName.givenName, fullName.familyName, email, state, code, token);
     } else if ([credential isKindOfClass:ASPasswordCredential.class]) {
         ASPasswordCredential *passwordCredential = credential;
         NSString *user = passwordCredential.user;
